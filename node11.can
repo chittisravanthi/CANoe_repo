@@ -1,0 +1,84 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+variables
+  
+{ 
+  int count;
+  timer t1;
+  timer t2;
+  message 0x20 node1={dlc=2};
+  message 0x30 node1_2={dlc=2};
+}
+//receving 
+on message 0x40
+{
+  write("node11(rx) msg %x",this.id); 
+  write("node22->data :%X %X  ",this.byte(0),this.byte(1));
+  @NS1::shouri=count;
+ } 
+on message 0x50
+{
+  write("node11(rx) msg %x",this.id); 
+  write("node22->data :%X %X  ",this.byte(0),this.byte(1));
+  @NS1::shouri=count;
+ } 
+on start
+{
+  count=0;
+  setTimer(t1,2); //timer start fo 2sec cyclic
+   setTimer(t2,10);
+}
+
+
+on timer t1
+  
+{
+  write("timer  t1 elapsed");
+  settimer(t1,2);
+  node1.byte(0)=0xA1;
+  node1.byte(1)=0xB2;
+  output(node1);
+  
+ } 
+//transmit node1 msg2
+on timer t2
+  
+{
+   write("timer  t1 elapsed");
+  settimer(t2,2);
+   node1_2.byte(0)=0x41;
+  node1_2.byte(1)=0x52;
+  output(node1_2);
+  
+ }
+on signal speed
+{
+  write("speed=%f",getSignal(speed));
+}
+on signal_update speed
+{
+  count++;
+write("speed=%f",getSignal(speed));
+  
+}
+on sysvar NS1::shouri
+{
+  count++;
+  write("every i value change=%d",@NS1::shouri);
+}
+on sysvar_update NS1::shouri
+{
+  count++;
+  write("updated count at the end=%d",@NS1::shouri);
+}
+
+on stopMeasurement
+{
+  //write("count of key press %d",count);
+  write("stop");
+}
+
+
