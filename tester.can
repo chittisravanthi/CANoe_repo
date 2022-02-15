@@ -1,0 +1,49 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+  message 0x200 testermsg;
+  timer testerpresent;
+}
+on start
+{
+  write("tester::started");
+  write("tester: press 't' - extended diagostic");
+  testermsg.dlc=8;
+}
+void init_frame()
+{
+  int i;
+for(i=0;i<8;i++)
+  testermsg.byte(i)=0x0ff;// we making recessive to make pull down
+}
+on key 't'
+{
+  
+  write("tester: request to move to Extended diagnostic session:");
+  init_frame();
+  testermsg.byte(0)=0x02;//bytes of type and data length
+  testermsg.byte(1)=0x10;//service id(hex 0x10)
+  testermsg.byte(2)=0x03;//sub function(diagnostic session)
+  output(testermsg);//for transmit request frame
+   setTimer(testerpresent,4);
+}
+on timer testerpresent //on place of key
+{
+  setTimer(testerpresent,4);
+  init_frame();
+  testermsg.byte(0)=0x02;//bytes->single frame
+  testermsg.byte(1)=0x3E;//tester present id
+  testermsg.byte(2)=0x00;//sub function
+  output(testermsg);// for transmit request the frame 
+  //setTimer(testerpresent,4);
+}
+on key 'k'
+{
+  canceltimer(testerpresent);
+}
+

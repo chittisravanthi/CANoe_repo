@@ -1,0 +1,54 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+  message 0x400 servermsg; 
+  timer sessiontimer;
+}
+on start{
+   write("server::started");
+  write("server: press 't' - extended diagostic");
+  servermsg.dlc=8;
+}
+on message 0x200
+{
+if((this.byte(1)==0x10) && this.byte(2)==0x03)//does it have byte 1 and byte 3
+{
+  write("server:message received from tester to move to different session");
+  servermsg.byte(0)=0x06;//data length
+  servermsg.byte(1)=0x50;//postive response//if negative response comes means it will be 0xff
+  servermsg.byte(2)=this.byte(2);//sub fumction has sent to byte 2
+  servermsg.byte(3)=0x00;//timers p2 in msec
+  servermsg.byte(4)=0x14;//timers p2
+  servermsg.byte(5)=0x01;//timer p2*
+  servermsg.byte(6)=0xf4;//timer p2* -> p2* is always greater than p2 server
+  servermsg.byte(7)=0xff;
+}
+  elseif((this.byte(1)==0x10)&&this.byte(2)==0x04)
+{
+  servermsg.byte(0)=0x04;
+  servermsg.byte(1)=0x7f;//negative response
+  servermsg.byte(2)=0x10;//service id
+  servermsg.byte(3)=0x12;//service is not supported
+  output(servermsg);
+ } 
+else if((this.byte(1)==0x3e))
+{
+  write("server:tester present");
+  setTimer(sessiontimer,5);
+  servermsg.byte(0)=0x02;//type of frame and data length
+  servermsg.byte(1)=0x7E;//
+  servermsg.byte(2)=this.byte(2);
+  output(servermsg);
+}
+}
+on timer sessiontimer
+
+{
+  write("server is moving to default session");
+}
+  
